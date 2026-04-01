@@ -21,6 +21,7 @@ const lobby = {
   settings: {
     timeLimit: C.DEFAULT_TIME_LIMIT,
     scoreLimit: C.DEFAULT_SCORE_LIMIT,
+    map: 'big',
   },
   hostId: null,
   game: null, // null = in lobby, object = game running
@@ -44,9 +45,12 @@ function broadcastLobby() {
 
 // ── Game state management ──
 function startGame() {
+  // Apply selected map
+  C.applyMap(lobby.settings.map);
+
   const redPlayers = [];
   const bluePlayers = [];
-  for (const [id, p] of lobby.players) {
+  for (const [, p] of lobby.players) {
     if (p.team === 'red') redPlayers.push(p);
     else if (p.team === 'blue') bluePlayers.push(p);
   }
@@ -73,7 +77,7 @@ function startGame() {
 
   lobby.game = gameState;
 
-  io.emit('game-start', compactState(gameState));
+  io.emit('game-start', { ...compactState(gameState), map: lobby.settings.map });
 
   // Start game loop
   gameState.tickInterval = setInterval(() => {
@@ -175,7 +179,7 @@ io.on('connection', (socket) => {
 
     // If game is running, send current game state
     if (lobby.game) {
-      socket.emit('game-running', compactState(lobby.game));
+      socket.emit('game-running', { ...compactState(lobby.game), map: lobby.settings.map });
     }
 
     broadcastLobby();
@@ -185,9 +189,21 @@ io.on('connection', (socket) => {
     const player = lobby.players.get(socket.id);
     if (!player) return;
     if (!['red', 'blue', 'spectator'].includes(team)) return;
-    if (lobby.game) return; // Can't switch team during game
 
     player.team = team;
+
+    // If game is running, add/remove player from active game
+    if (lobby.game) {
+      // Remove from game first (if already playing)
+      lobby.game.players = lobby.game.players.filter(p => p.id !== socket.id);
+
+      if (team === 'red' || team === 'blue') {
+        // Add to game with a spawn position
+        const teamCount = lobby.game.players.filter(p => p.team === team).length;
+        lobby.game.players.push(Physics.createPlayer(socket.id, player.nick, team, teamCount));
+      }
+    }
+
     broadcastLobby();
   });
 
@@ -199,6 +215,23 @@ io.on('connection', (socket) => {
     if (!success) {
       socket.emit('error', { message: 'Her iki takımda da en az 1 oyuncu olmalı!' });
     }
+  });
+
+  socket.on('set-map', (mapId) => {
+    if (socket.id !== lobby.hostId) return;
+    if (lobby.game) return;
+    if (!C.MAPS[mapId]) return;
+    lobby.settings.map = mapId;
+    broadcastLobby();
+  });
+
+  socket.on('stop-game', () => {
+    if (socket.id !== lobby.hostId) return;
+    if (!lobby.game) return;
+    clearInterval(lobby.game.tickInterval);
+    io.emit('game-stopped');
+    lobby.game = null;
+    broadcastLobby();
   });
 
   socket.on('input', (input) => {

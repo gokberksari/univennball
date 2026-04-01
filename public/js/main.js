@@ -66,6 +66,9 @@
   const teamBlueList = document.getElementById("team-blue-list");
   const teamSpecList = document.getElementById("team-spec-list");
   const btnStart = document.getElementById("btn-start");
+  const btnBackGame = document.getElementById("btn-back-game");
+  const btnStopGame = document.getElementById("btn-stop-game");
+  let gameRunning = false;
 
   document.querySelectorAll(".team-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -75,6 +78,23 @@
 
   btnStart.addEventListener("click", () => {
     socket.emit("start-game");
+  });
+
+  // ── Map select ──
+  const mapSelect = document.getElementById("map-select");
+  const mapBtns = document.querySelectorAll(".map-btn");
+  mapBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      socket.emit("set-map", btn.dataset.map);
+    });
+  });
+
+  btnBackGame.addEventListener("click", () => {
+    showScreen("screen-game");
+  });
+
+  btnStopGame.addEventListener("click", () => {
+    socket.emit("stop-game");
   });
 
   socket.on("connect", () => {
@@ -91,11 +111,25 @@
     renderPlayerList(teamBlueList, blue, data.hostId);
     renderPlayerList(teamSpecList, spec, data.hostId);
 
-    // Show start button only for host
-    if (data.hostId === myId) {
-      btnStart.classList.remove("hidden");
-    } else {
+    // Show appropriate buttons
+    const isHost = data.hostId === myId;
+    if (gameRunning) {
       btnStart.classList.add("hidden");
+      mapSelect.classList.add("hidden");
+      btnBackGame.classList.remove("hidden");
+      btnStopGame.classList.toggle("hidden", !isHost);
+    } else {
+      btnBackGame.classList.add("hidden");
+      btnStopGame.classList.add("hidden");
+      btnStart.classList.toggle("hidden", !isHost);
+      mapSelect.classList.toggle("hidden", !isHost);
+    }
+
+    // Update active map button
+    if (data.settings && data.settings.map) {
+      mapBtns.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.map === data.settings.map);
+      });
     }
   });
 
@@ -126,6 +160,8 @@
   const btnBackLobby = document.getElementById("btn-back-lobby");
 
   socket.on("game-start", (state) => {
+    gameRunning = true;
+    if (state.map) CONSTANTS.applyMap(state.map);
     showScreen("screen-game");
     gameoverOverlay.classList.add("hidden");
     goalOverlay.classList.add("hidden");
@@ -224,6 +260,7 @@
   });
 
   socket.on("game-over", (data) => {
+    gameRunning = false;
     Input.stopLoop();
     stopRenderLoop();
 
@@ -253,6 +290,16 @@
     }, 1800);
   });
 
+  socket.on("game-stopped", () => {
+    gameRunning = false;
+    Input.stopLoop();
+    stopRenderLoop();
+    SFX.ambient.pause();
+    showScreen("screen-lobby");
+    gameoverOverlay.classList.add("hidden");
+    goalOverlay.classList.add("hidden");
+  });
+
   socket.on("error", (data) => {
     alert(data.message);
   });
@@ -261,6 +308,17 @@
     showScreen("screen-lobby");
     gameoverOverlay.classList.add("hidden");
     goalOverlay.classList.add("hidden");
+  });
+
+  // ESC to toggle between game and lobby
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && gameRunning) {
+      if (currentScreen === "screen-game") {
+        showScreen("screen-lobby");
+      } else if (currentScreen === "screen-lobby") {
+        showScreen("screen-game");
+      }
+    }
   });
 
   function updateScore(score) {
@@ -382,11 +440,14 @@
   // ── Handle game already running (reconnect) ──
   socket.on("game-running", (state) => {
     // If a game is already in progress when we join, show it as spectator
+    gameRunning = true;
+    if (state.map) CONSTANTS.applyMap(state.map);
     showScreen("screen-game");
     Renderer.init(document.getElementById("game-canvas"));
     gameState = state;
     stateTimestamp = Date.now();
     updateScoreboard(state.s, state.t);
     startRenderLoop();
+    SFX.ambient.play().catch(() => {});
   });
 })();

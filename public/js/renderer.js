@@ -217,13 +217,22 @@ const Renderer = (() => {
     const playerCanvasX = C.FIELD_MARGIN + C.FIELD_W / 2 + myPlayer.x;
     const playerCanvasY = C.FIELD_MARGIN + C.FIELD_H / 2 + myPlayer.y;
 
-    // Camera top-left so player is centered on screen
-    let camX = playerCanvasX - viewW / 2;
-    let camY = playerCanvasY - viewH / 2;
+    let camX, camY;
 
-    // Clamp to field bounds
-    camX = Math.max(0, Math.min(camX, fullW - viewW));
-    camY = Math.max(0, Math.min(camY, fullH - viewH));
+    if (fullW <= viewW) {
+      // Field fits in viewport — center it
+      camX = -(viewW - fullW) / 2;
+    } else {
+      camX = playerCanvasX - viewW / 2;
+      camX = Math.max(0, Math.min(camX, fullW - viewW));
+    }
+
+    if (fullH <= viewH) {
+      camY = -(viewH - fullH) / 2;
+    } else {
+      camY = playerCanvasY - viewH / 2;
+      camY = Math.max(0, Math.min(camY, fullH - viewH));
+    }
 
     return { camX, camY };
   }
@@ -347,19 +356,15 @@ const Renderer = (() => {
 
     // Find my player for camera
     let cam = { camX: 0, camY: 0 };
-    if (state && myId) {
-      const me = state.p.find(p => p.id === myId);
-      if (me) {
-        cam = getCameraOffset(me);
-      }
+    if (state) {
+      const me = myId ? state.p.find(p => p.id === myId) : null;
+      cam = getCameraOffset(me || { x: 0, y: 0 });
     }
 
-    // Draw field from offscreen canvas (only the visible viewport portion)
-    ctx.drawImage(
-      fieldCanvas,
-      cam.camX, cam.camY, viewW, viewH,
-      0, 0, viewW, viewH
-    );
+    // Clear canvas and draw field (handles centering when field < viewport)
+    ctx.fillStyle = '#0a0e14';
+    ctx.fillRect(0, 0, viewW, viewH);
+    ctx.drawImage(fieldCanvas, -cam.camX, -cam.camY);
 
     if (!state) return;
 

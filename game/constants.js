@@ -1,21 +1,4 @@
 const CONSTANTS = {
-  // Field - 10v10 (2400/3*2 = 1600, 1200/3*2 = 800)
-  FIELD_W: 1600,
-  FIELD_H: 800,
-  FIELD_MARGIN: 120,
-
-  // How far players can go outside field lines
-  PLAYER_OUT_OF_BOUNDS: 80,
-
-  // Viewport (what the player sees on screen)
-  CANVAS_W: 960,
-  CANVAS_H: 540,
-
-  // Goals
-  GOAL_DEPTH: 40,
-  GOAL_WIDTH: 160,
-  GOAL_POST_RADIUS: 12,
-
   // Ball
   BALL_RADIUS: 10,
   BALL_DAMPING: 0.98,
@@ -43,20 +26,93 @@ const CONSTANTS = {
   DEFAULT_SCORE_LIMIT: 5,
   GOAL_RESET_DELAY: 5000,
 
-  // Spawns for 10v10 (scaled to 1600x800)
+  // Map presets
+  MAPS: {
+    big: {
+      name: 'Büyük Saha',
+      FIELD_W: 1600,
+      FIELD_H: 800,
+      FIELD_MARGIN: 120,
+      PLAYER_OUT_OF_BOUNDS: 80,
+      GOAL_DEPTH: 40,
+      GOAL_WIDTH: 160,
+      GOAL_POST_RADIUS: 12,
+      SPAWNS: {
+        red: [
+          { x: -130, y: 0 },
+          { x: -300, y: -130 },
+          { x: -300, y: 130 },
+          { x: -330, y: 0 },
+          { x: -500, y: -100 },
+          { x: -500, y: 100 },
+          { x: -600, y: -230 },
+          { x: -600, y: 230 },
+          { x: -600, y: -70 },
+          { x: -600, y: 70 },
+          { x: -730, y: 0 },
+        ],
+        blue: [
+          { x: 130, y: 0 },
+          { x: 300, y: -130 },
+          { x: 300, y: 130 },
+          { x: 330, y: 0 },
+          { x: 500, y: -100 },
+          { x: 500, y: 100 },
+          { x: 600, y: -230 },
+          { x: 600, y: 230 },
+          { x: 600, y: -70 },
+          { x: 600, y: 70 },
+          { x: 730, y: 0 },
+        ],
+      },
+    },
+    small: {
+      name: 'Küçük Saha',
+      FIELD_W: 800,
+      FIELD_H: 400,
+      FIELD_MARGIN: 80,
+      PLAYER_OUT_OF_BOUNDS: 40,
+      GOAL_DEPTH: 30,
+      GOAL_WIDTH: 120,
+      GOAL_POST_RADIUS: 10,
+      SPAWNS: {
+        red: [
+          { x: -80, y: 0 },
+          { x: -200, y: -80 },
+          { x: -200, y: 80 },
+          { x: -350, y: 0 },
+        ],
+        blue: [
+          { x: 80, y: 0 },
+          { x: 200, y: -80 },
+          { x: 200, y: 80 },
+          { x: 350, y: 0 },
+        ],
+      },
+    },
+  },
+
+  // Default active map (overwritten at game start)
+  FIELD_W: 1600,
+  FIELD_H: 800,
+  FIELD_MARGIN: 120,
+  PLAYER_OUT_OF_BOUNDS: 80,
+  GOAL_DEPTH: 40,
+  GOAL_WIDTH: 160,
+  GOAL_POST_RADIUS: 12,
   SPAWNS: {
     red: [
-      { x: -130, y: 0 }, // ST
-      { x: -300, y: -130 }, // LM
-      { x: -300, y: 130 }, // RM
-      { x: -330, y: 0 }, // CM
-      { x: -500, y: -100 }, // LCM
-      { x: -500, y: 100 }, // RCM
-      { x: -600, y: -230 }, // LB
-      { x: -600, y: 230 }, // RB
-      { x: -600, y: -70 }, // LCB
-      { x: -600, y: 70 }, // RCB
-      { x: -730, y: 0 }, // GK
+      { x: -130, y: 0 },
+      { x: -300, y: -130 },
+      { x: -300, y: 130 },
+      { x: -330, y: 0 },
+      { x: -500, y: -100 },
+      { x: -500, y: 100 },
+      { x: -600, y: -230 },
+      { x: -600, y: 230 },
+      { x: -600, y: -70 },
+      { x: -600, y: 70 },
+      { x: -730, y: 0 },
     ],
     blue: [
       { x: 130, y: 0 },
@@ -72,6 +128,19 @@ const CONSTANTS = {
       { x: 730, y: 0 },
     ],
   },
+};
+
+// Apply a map preset to the active constants
+CONSTANTS.applyMap = function(mapId) {
+  const map = CONSTANTS.MAPS[mapId] || CONSTANTS.MAPS.big;
+  CONSTANTS.FIELD_W = map.FIELD_W;
+  CONSTANTS.FIELD_H = map.FIELD_H;
+  CONSTANTS.FIELD_MARGIN = map.FIELD_MARGIN;
+  CONSTANTS.PLAYER_OUT_OF_BOUNDS = map.PLAYER_OUT_OF_BOUNDS;
+  CONSTANTS.GOAL_DEPTH = map.GOAL_DEPTH;
+  CONSTANTS.GOAL_WIDTH = map.GOAL_WIDTH;
+  CONSTANTS.GOAL_POST_RADIUS = map.GOAL_POST_RADIUS;
+  CONSTANTS.SPAWNS = map.SPAWNS;
 };
 
 if (typeof module !== "undefined") module.exports = CONSTANTS;

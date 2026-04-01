@@ -199,6 +199,56 @@ input:focus {
   box-shadow: 0 4px 20px rgba(34,214,122,0.35);
 }
 
+.btn-danger {
+  background: var(--team-red);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(255,77,90,0.25);
+}
+.btn-danger:hover {
+  background: #ff6b73;
+  box-shadow: 0 4px 20px rgba(255,77,90,0.35);
+}
+
+.lobby-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.lobby-footer .btn-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Map Select ── */
+.map-select {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.map-btn {
+  padding: 8px 20px;
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.map-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text);
+}
+.map-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .hidden {
   display: none !important;
 }
