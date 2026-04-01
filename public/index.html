@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UnivennBall</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Ambient background -->
+  <div class="bg-noise"></div>
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+
+  <header id="header">
+    <span class="logo">Univenn<span class="logo-accent">Ball</span></span>
+  </header>
+
+  <!-- Screen: Nick -->
+  <div id="screen-nick" class="screen active">
+    <div class="nick-card">
+      <div class="nick-card__icon">&#9917;</div>
+      <h2>Oyuna Katıl</h2>
+      <p class="nick-subtitle">Takma adını seç ve sahaya çık</p>
+      <div class="input-group">
+        <input id="nick-input" type="text" maxlength="16" placeholder="Nick gir..." autofocus />
+      </div>
+      <button id="nick-ok" class="btn btn-primary">
+        <span>Sahaya Çık</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Screen: Lobby -->
+  <div id="screen-lobby" class="screen">
+    <div class="lobby-container">
+      <h2 class="lobby-title">Takım Seç</h2>
+      <div class="team-columns">
+        <!-- Red Team -->
+        <div class="team-col team-col--red">
+          <button class="team-btn team-btn-red" data-team="red">
+            <span class="team-btn__dot"></span>
+            Kırmızı
+          </button>
+          <ul id="team-red-list" class="player-list"></ul>
+        </div>
+        <!-- Spectators -->
+        <div class="team-col team-col--spec">
+          <button class="team-btn team-btn-spec" data-team="spectator">
+            <span class="team-btn__dot"></span>
+            İzleyiciler
+          </button>
+          <ul id="team-spec-list" class="player-list"></ul>
+        </div>
+        <!-- Blue Team -->
+        <div class="team-col team-col--blue">
+          <button class="team-btn team-btn-blue" data-team="blue">
+            <span class="team-btn__dot"></span>
+            Mavi
+          </button>
+          <ul id="team-blue-list" class="player-list"></ul>
+        </div>
+      </div>
+
+      <!-- Lobby Chat -->
+      <div id="lobby-chat-panel" class="lobby-chat">
+        <div id="lobby-chat-messages" class="lobby-chat__messages"></div>
+        <form id="lobby-chat-form" autocomplete="off">
+          <input id="lobby-chat-input" type="text" maxlength="200" placeholder="Mesaj yaz..." />
+        </form>
+      </div>
+
+      <div class="lobby-footer">
+        <div class="controls-info">
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> veya <kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&larr;</kbd><kbd>&rarr;</kbd> hareket &nbsp;&middot;&nbsp; <kbd>X</kbd> veya <kbd>Space</kbd> şut
+        </div>
+        <button id="btn-start" class="btn btn-primary hidden">
+          <span>Oyunu Başlat</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen: Game -->
+  <div id="screen-game" class="screen">
+    <div id="scoreboard">
+      <div class="score-side score-side--red">
+        <span class="score-team-dot red"></span>
+        <span id="score-red" class="score-num">0</span>
+      </div>
+      <span class="score-dash">-</span>
+      <div class="score-side score-side--blue">
+        <span id="score-blue" class="score-num">0</span>
+        <span class="score-team-dot blue"></span>
+      </div>
+      <span class="score-divider"></span>
+      <span id="timer" class="timer">03:00</span>
+    </div>
+    <canvas id="game-canvas"></canvas>
+    <!-- Chat -->
+    <div id="chat-panel">
+      <div id="chat-messages"></div>
+      <form id="chat-form" autocomplete="off">
+        <input id="chat-input" type="text" maxlength="200" placeholder="Mesaj yaz... (Enter)" />
+      </form>
+    </div>
+    <div id="goal-overlay" class="goal-overlay hidden">
+      <div class="goal-overlay__content">
+        <span id="goal-text">GOL!</span>
+        <div id="celebration-media" class="celebration-media hidden">
+          <video id="celebration-video" autoplay muted playsinline class="hidden"></video>
+          <div id="celebration-nick" class="celebration-nick"></div>
+        </div>
+      </div>
+    </div>
+    <div id="gameover-overlay" class="gameover-overlay hidden">
+      <h2 id="gameover-text"></h2>
+      <button id="btn-back-lobby" class="btn btn-primary">Lobiye Dön</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/game/constants.js"></script>
+  <script src="/js/input.js"></script>
+  <script src="/js/renderer.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
